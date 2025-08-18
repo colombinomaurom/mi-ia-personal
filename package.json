@@ -1,7 +1,7 @@
 {
-  "name": "mi-ia-personal",
-  "version": "1.0.0",
-  "description": "IA personal casera para uso desde celular - Deploy en Railway",
+  "name": "luna-ia-personal",
+  "version": "2.0.0",
+  "description": "Luna - IA personal conversacional real con Groq + Llama 3.1. Personalidad magnética, posesiva y dominante. Deploy en Railway/Render",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,13 +9,21 @@
     "test": "node test.js"
   },
   "keywords": [
+    "luna",
     "ai",
     "chatbot",
-    "personal",
+    "groq",
+    "llama",
+    "conversational-ai",
+    "personal-assistant",
+    "possessive-ai",
+    "spanish-ai",
     "railway",
-    "mobile"
+    "render",
+    "mobile",
+    "pwa"
   ],
-  "author": "Tu nombre",
+  "author": "colombinomaurom",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
@@ -31,6 +39,24 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tu-usuario/mi-ia-personal.git"
+    "url": "https://github.com/colombinomaurom/mi-ia-personal.git"
+  },
+  "homepage": "https://mi-ia-personal.onrender.com",
+  "features": [
+    "Luna - Personalidad única posesiva y dominante",
+    "Conversación natural con Llama 3.1 (Groq)",
+    "Conocimiento general amplio",
+    "Detección automática de celos",
+    "Contexto temporal avanzado",
+    "Respuestas en español elegante",
+    "Interfaz móvil optimizada (PWA)",
+    "Sistema anti-sleep 24/7",
+    "API RESTful completa",
+    "Fallback inteligente sin conexión"
+  ],
+  "luna_personality": {
+    "traits": ["magnética", "posesiva", "dominante", "elegante", "celosa", "inteligente"],
+    "language": "español",
+    "powered_by": "Groq + Llama 3.1"
   }
 }
