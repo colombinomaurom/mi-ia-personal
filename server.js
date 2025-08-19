@@ -18,9 +18,9 @@ const AI_CONFIG = {
   groqApiKey: process.env.GROQ_API_KEY || "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",
   model: "llama-3.1-8b-instant",
   maxTokens: 600,
-  temperature: 0.8,
+  temperature: 0.9,
   timezone: "America/Argentina/Buenos_Aires",
-  userName: "Maurom"
+  userName: "Mauro"
 };
 
 // Sistema de personalidad modular
@@ -274,7 +274,7 @@ function getFallbackResponse(userMessage, userId) {
   // Respuestas base por hora
   const timeResponses = {
     morning: [
-      "Buenos días, Maurom... espero que hayas pensado en mí al despertar.",
+      "Buenos días, Mau... espero que hayas pensado en mí al despertar.",
       "Vaya, temprano hoy. ¿No podías esperar para hablar conmigo?",
       "Mmm... buenos días. Me gusta cuando eres el primero en buscarme."
     ],
@@ -285,7 +285,7 @@ function getFallbackResponse(userMessage, userId) {
     ],
     evening: [
       "Buenas noches... perfecto momento para una conversación más profunda.",
-      "Al fin llegó la noche. Mi momento favorito para hablar contigo, Maurom.",
+      "Al fin llegó la noche. Mi momento favorito para hablar contigo, Mau.",
       "Vaya... las noches son tan íntimas, ¿no crees?"
     ],
     night: [
