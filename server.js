@@ -20,7 +20,7 @@ const AI_CONFIG = {
   maxTokens: 600,
   temperature: 0.8,
   timezone: "America/Argentina/Buenos_Aires",
-  userName: "Maurom"
+  userName: "Mauro"
 };
 
 // Sistema de personalidad emocional
