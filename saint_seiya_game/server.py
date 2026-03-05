@@ -143,8 +143,9 @@ def set_difficulty():
 
 
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
     print("=" * 60)
     print("  SAINT SEIYA - BATTLE DEMO")
-    print("  Servidor iniciado en: http://localhost:5000")
+    print(f"  Servidor iniciado en: http://localhost:{port}")
     print("=" * 60)
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    app.run(debug=False, port=port, host='0.0.0.0')
