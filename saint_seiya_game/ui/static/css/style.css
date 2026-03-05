@@ -1,0 +1,192 @@
+/* ============================================================
+   SAINT SEIYA BATTLE DEMO - Estilos Globales
+   Diseño horizontal para pantalla completa
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-dark: #050510;
+  --bg-panel: #0c0c20;
+  --bg-card: #111128;
+  --bg-card-hover: #1a1a35;
+  --border-primary: #2a2a50;
+  --border-accent: #4a4a80;
+  --gold: #ffd700;
+  --gold-dark: #b8860b;
+  --red: #cc2200;
+  --red-light: #ff4444;
+  --blue: #0055cc;
+  --blue-light: #4488ff;
+  --green: #00aa44;
+  --green-light: #44ff88;
+  --purple: #6600cc;
+  --purple-light: #aa44ff;
+  --text-primary: #e0d8c0;
+  --text-secondary: #a0a8c0;
+  --text-dim: #606080;
+  --hp-color: #22cc44;
+  --mp-color: #2244cc;
+  --cosmo-color: #cc8800;
+  --shadow-glow: 0 0 15px rgba(100, 100, 200, 0.3);
+  --font-main: 'Segoe UI', 'Arial', sans-serif;
+}
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--bg-dark);
+  font-family: var(--font-main);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+/* ============================================================
+   BARRAS DE ESTADO
+   ============================================================ */
+
+.stat-bar-container {
+  position: relative; width: 100%;
+  height: 8px; background: #1a1a30; border-radius: 4px;
+  overflow: hidden; border: 1px solid var(--border-primary);
+}
+.stat-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 0.4s ease-out;
+}
+.hp-bar { background: linear-gradient(90deg, #115522, #22cc44); }
+.mp-bar { background: linear-gradient(90deg, #112255, #2244cc); }
+.cosmo-bar { background: linear-gradient(90deg, #553300, #cc8800); }
+
+.stat-bar-container.hp-bar-container { height: 10px; }
+.stat-bar-container.mp-bar-container { height: 7px; }
+
+/* ============================================================
+   EFECTOS DE ESTADO (BADGES)
+   ============================================================ */
+
+.status-badges {
+  display: flex; flex-wrap: wrap; gap: 2px;
+  min-height: 20px;
+}
+.status-badge {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 1px 5px; border-radius: 3px;
+  font-size: 0.7em; font-weight: bold;
+  border: 1px solid rgba(255,255,255,0.2);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   ANIMACIONES
+   ============================================================ */
+
+@keyframes damage-flash {
+  0%, 100% { background: transparent; }
+  30% { background: rgba(255, 50, 50, 0.4); }
+}
+@keyframes heal-flash {
+  0%, 100% { background: transparent; }
+  30% { background: rgba(50, 255, 100, 0.3); }
+}
+@keyframes crit-flash {
+  0% { background: rgba(255, 220, 0, 0.6); }
+  100% { background: transparent; }
+}
+@keyframes death-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+@keyframes slide-in-log {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse-active {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.4); }
+  50% { box-shadow: 0 0 20px rgba(255,215,0,0.8); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes popup-enter {
+  from { opacity: 0; transform: scale(0.85) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.damage-flash { animation: damage-flash 0.4s ease-out; }
+.heal-flash   { animation: heal-flash 0.4s ease-out; }
+.crit-flash   { animation: crit-flash 0.5s ease-out; }
+.death-animation { animation: death-shake 0.4s ease, fadeIn 0.5s ease reverse forwards; opacity: 0.4; }
+.active-turn  { animation: pulse-active 1.5s ease-in-out infinite; }
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--border-accent); border-radius: 3px; }
+
+/* ============================================================
+   BOTONES COMUNES
+   ============================================================ */
+
+.btn {
+  padding: 8px 16px; border: 1px solid; border-radius: 6px;
+  cursor: pointer; font-family: inherit; font-size: 0.9em;
+  transition: all 0.15s; background: transparent; letter-spacing: 0.5px;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-gold {
+  border-color: var(--gold); color: var(--gold);
+  background: rgba(255,215,0,0.08);
+}
+.btn-gold:hover:not(:disabled) {
+  background: rgba(255,215,0,0.2);
+  box-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+.btn-red {
+  border-color: var(--red-light); color: var(--red-light);
+  background: rgba(204,34,0,0.08);
+}
+.btn-red:hover:not(:disabled) {
+  background: rgba(204,34,0,0.2);
+  box-shadow: 0 0 12px rgba(204,34,0,0.4);
+}
+.btn-blue {
+  border-color: var(--blue-light); color: var(--blue-light);
+  background: rgba(68,136,255,0.08);
+}
+.btn-blue:hover:not(:disabled) {
+  background: rgba(68,136,255,0.2);
+  box-shadow: 0 0 12px rgba(68,136,255,0.4);
+}
+.btn-green {
+  border-color: var(--green-light); color: var(--green-light);
+  background: rgba(68,255,136,0.08);
+}
+.btn-green:hover:not(:disabled) {
+  background: rgba(68,255,136,0.2);
+}
+
+/* ============================================================
+   POPUP / MODAL
+   ============================================================ */
+
+.overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,5,0.75);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease;
+}
+.overlay.hidden { display: none; }
+.popup {
+  background: linear-gradient(135deg, #0d0d22 0%, #111130 100%);
+  border: 1px solid var(--border-accent);
+  border-radius: 12px;
+  box-shadow: 0 0 40px rgba(80,80,200,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  animation: popup-enter 0.25s ease-out;
+  max-width: 95vw; max-height: 90vh;
+  overflow: hidden; display: flex; flex-direction: column;
+}

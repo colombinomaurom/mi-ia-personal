@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Héroes – Saint Seiya</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+body { background: #050510; overflow-y: auto; min-height: 100vh; }
+.page-header {
+  display: flex; align-items: center; gap: 15px;
+  padding: 15px 30px;
+  background: linear-gradient(90deg, #0a0a20, #111128);
+  border-bottom: 1px solid #2a2a50;
+}
+.page-title { font-size: 1.4em; font-weight: bold; color: #ffd700; letter-spacing: 2px; }
+.back-btn {
+  padding: 6px 14px; border: 1px solid #4466aa; border-radius: 6px;
+  color: #88aaff; background: transparent; cursor: pointer;
+  font-family: inherit; font-size: 0.85em; text-decoration: none;
+}
+.back-btn:hover { background: rgba(68,102,170,0.2); }
+
+.heroes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px; padding: 20px;
+}
+.hero-detail-card {
+  background: linear-gradient(135deg, #0d0d22, #111130);
+  border: 1px solid #2a2a50; border-radius: 10px;
+  padding: 15px; transition: all 0.2s;
+}
+.hero-detail-card:hover { border-color: #4466aa; box-shadow: 0 0 20px rgba(70,100,200,0.2); }
+.hdc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.hdc-icon { font-size: 2.5em; }
+.hdc-name { font-size: 1.1em; font-weight: bold; color: #ffd700; }
+.hdc-title { font-size: 0.75em; color: #888; }
+.hdc-element { font-size: 0.7em; margin-top: 2px; }
+
+.stats-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  margin-bottom: 12px;
+}
+.stat-box {
+  background: #0c0c1a; border: 1px solid #1a1a40; border-radius: 5px;
+  padding: 5px 8px; text-align: center;
+}
+.stat-box-label { font-size: 0.6em; color: #666; display: block; }
+.stat-box-val { font-size: 0.9em; font-weight: bold; color: #e0d8c0; }
+.stat-hp { color: #44dd66 !important; }
+.stat-atk { color: #ff8844 !important; }
+.stat-def { color: #4488ff !important; }
+.stat-spd { color: #ffdd44 !important; }
+
+.skills-section h4 {
+  font-size: 0.7em; letter-spacing: 2px; color: #6688aa;
+  margin-bottom: 6px; padding-bottom: 4px;
+  border-bottom: 1px solid #1a1a40;
+}
+.skill-item {
+  display: flex; gap: 8px; align-items: flex-start;
+  padding: 5px; border-radius: 4px; margin-bottom: 4px;
+  background: #090916;
+}
+.si-icon { font-size: 1.1em; flex-shrink: 0; }
+.si-name { font-size: 0.75em; font-weight: bold; color: #c0b890; }
+.si-desc { font-size: 0.65em; color: #666; line-height: 1.3; }
+.si-cost { font-size: 0.65em; color: #4466cc; margin-top: 2px; }
+.passive-badge {
+  display: inline-block; font-size: 0.6em; padding: 1px 5px;
+  background: rgba(150,100,255,0.15); border: 1px solid #6644aa;
+  border-radius: 3px; color: #aa88ff;
+}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <a href="/" class="back-btn">← Volver</a>
+  <div class="page-title">🛡️ LOS SANTOS DE BRONCE</div>
+</div>
+
+<div class="heroes-grid" id="heroesGrid">
+  <div style="color:#555; padding:30px; text-align:center;">Cargando...</div>
+</div>
+
+<script>
+const ELEMENT_COLORS = {
+  light: '#ffd700', dark: '#9966ff', fire: '#ff6633',
+  ice: '#66ccff', earth: '#88cc44', wind: '#44ffcc', neutral: '#888'
+};
+
+fetch('/api/heroes')
+.then(r => r.json())
+.then(heroes => {
+  fetch('/api/skills')
+  .then(r => r.json())
+  .then(allSkills => {
+    const grid = document.getElementById('heroesGrid');
+    grid.innerHTML = '';
+    heroes.forEach(hero => {
+      const elColor = ELEMENT_COLORS[hero.element] || '#888';
+      const skillsHTML = (hero.skill_ids || []).map(sid => {
+        const sk = allSkills[sid];
+        if (!sk) return '';
+        return `
+          <div class="skill-item">
+            <div class="si-icon">${sk.icon || '⚔️'}</div>
+            <div>
+              <div class="si-name">${sk.name}
+                ${sk.is_basic ? '<span class="passive-badge">Básico</span>' : ''}
+              </div>
+              <div class="si-desc">${sk.description}</div>
+              <div class="si-cost">MP: ${sk.mp_cost} | Enfriamiento: ${sk.cooldown} turnos</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      grid.innerHTML += `
+        <div class="hero-detail-card">
+          <div class="hdc-header">
+            <div class="hdc-icon">${hero.icon}</div>
+            <div>
+              <div class="hdc-name">${hero.name}</div>
+              <div class="hdc-title">${hero.title || ''}</div>
+              <div class="hdc-element" style="color:${elColor}">◆ ${hero.element?.toUpperCase()}</div>
+            </div>
+          </div>
+          <div style="font-size:0.72em; color:#777; margin-bottom:10px; line-height:1.4;">
+            ${hero.description || ''}
+          </div>
+          <div class="stats-grid">
+            <div class="stat-box"><span class="stat-box-label">HP</span>
+              <span class="stat-box-val stat-hp">${hero.max_hp || hero.hp}</span></div>
+            <div class="stat-box"><span class="stat-box-label">MP</span>
+              <span class="stat-box-val">${hero.max_mp || hero.mp}</span></div>
+            <div class="stat-box"><span class="stat-box-label">ATK</span>
+              <span class="stat-box-val stat-atk">${hero.atk}</span></div>
+            <div class="stat-box"><span class="stat-box-label">DEF</span>
+              <span class="stat-box-val stat-def">${hero.def || hero['def']}</span></div>
+            <div class="stat-box"><span class="stat-box-label">SPD</span>
+              <span class="stat-box-val stat-spd">${hero.spd}</span></div>
+            <div class="stat-box"><span class="stat-box-label">CRIT%</span>
+              <span class="stat-box-val">${hero.crit_rate}%</span></div>
+          </div>
+          <div class="skills-section">
+            <h4>HABILIDADES</h4>
+            ${skillsHTML}
+          </div>
+        </div>`;
+    });
+  });
+});
+</script>
+</body>
+</html>

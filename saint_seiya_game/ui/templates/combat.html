@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Combate – Saint Seiya</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+/* ============================
+   LAYOUT HORIZONTAL PRINCIPAL
+   ============================ */
+html, body { overflow: hidden; }
+
+.battle-screen {
+  display: grid;
+  grid-template-rows: 38% 24% 38%;
+  width: 100vw; height: 100vh;
+  background: radial-gradient(ellipse at 50% 30%, #0a0a25 0%, #050510 70%);
+  position: relative;
+}
+
+/* ============================
+   ZONA ENEMIGOS (ARRIBA)
+   ============================ */
+.enemies-zone {
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 8px; padding: 8px 12px 6px;
+  background: linear-gradient(180deg, #08081a 0%, #0c0c22 100%);
+  border-bottom: 1px solid #1a1a40;
+  position: relative;
+}
+.enemies-zone::before {
+  content: 'ENEMIGOS';
+  position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
+  font-size: 0.65em; letter-spacing: 3px; color: #cc3333;
+  text-shadow: 0 0 8px #cc3333;
+}
+
+/* ============================
+   ZONA CENTRAL (LOG + ACCIONES)
+   ============================ */
+.center-zone {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  border-top: 1px solid #1a1a40;
+  border-bottom: 1px solid #1a1a40;
+  background: #080815;
+}
+
+.battle-log-panel {
+  overflow-y: auto; padding: 6px 10px;
+  display: flex; flex-direction: column; gap: 2px;
+  scroll-behavior: smooth;
+}
+.log-entry {
+  font-size: 0.78em; line-height: 1.4;
+  padding: 2px 6px; border-radius: 3px;
+  animation: slide-in-log 0.25s ease-out;
+  border-left: 2px solid transparent;
+}
+.log-entry.type-damage { border-left-color: #cc3300; color: #ffb090; }
+.log-entry.type-damage_summary { border-left-color: #ff5500; color: #ffbb88; }
+.log-entry.type-skill_used { border-left-color: #4488ff; color: #88aaff; }
+.log-entry.type-heal { border-left-color: #44ff88; color: #88ffaa; }
+.log-entry.type-status_applied { border-left-color: #cc88ff; color: #ddaaff; }
+.log-entry.type-death { border-left-color: #ff0000; color: #ff6666; font-weight: bold; }
+.log-entry.type-victory { border-left-color: #ffd700; color: #ffd700; font-weight: bold; font-size: 0.9em; }
+.log-entry.type-defeat  { border-left-color: #ff4444; color: #ff4444; font-weight: bold; font-size: 0.9em; }
+.log-entry.type-new_round { color: #6688aa; font-style: italic; }
+.log-entry.type-stunned { border-left-color: #ffdd00; color: #ffdd88; }
+.log-entry.type-dot { border-left-color: #ff8800; color: #ffaa66; }
+.log-entry.type-synergy { border-left-color: #aa44ff; color: #cc88ff; }
+.log-entry.type-battle_start { border-left-color: #ffd700; color: #ffe080; }
+.log-entry.type-shield_applied { border-left-color: #4169e1; color: #88aaff; }
+.log-entry.type-confusion_trigger { border-left-color: #ff69b4; color: #ffaad4; }
+.log-entry.type-dodge { border-left-color: #87ceeb; color: #aaddf0; }
+
+/* Panel de acciones lateral */
+.action-panel {
+  display: flex; flex-direction: column;
+  border-left: 1px solid #1a1a40;
+  padding: 8px; gap: 6px; justify-content: center;
+  background: #090912;
+}
+.action-label {
+  font-size: 0.65em; letter-spacing: 2px; color: #555;
+  text-align: center; margin-bottom: 2px;
+}
+.turn-info {
+  text-align: center; padding: 4px;
+  font-size: 0.7em; color: #888;
+  border: 1px solid #1a1a40; border-radius: 4px;
+}
+.current-turn-badge {
+  font-size: 0.85em; font-weight: bold;
+  padding: 3px 8px; border-radius: 4px;
+  text-align: center; margin-bottom: 4px;
+}
+.hero-turn { background: rgba(0,100,200,0.3); color: #88aaff; border: 1px solid #2244aa; }
+.enemy-turn { background: rgba(150,0,0,0.3); color: #ffaa88; border: 1px solid #aa2200; }
+
+/* ============================
+   ZONA HÉROES (ABAJO)
+   ============================ */
+.heroes-zone {
+  display: flex; align-items: flex-start; justify-content: center;
+  gap: 8px; padding: 6px 12px 8px;
+  background: linear-gradient(0deg, #08081a 0%, #0c0c22 100%);
+  position: relative;
+}
+.heroes-zone::before {
+  content: 'HÉROES';
+  position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  font-size: 0.65em; letter-spacing: 3px; color: #3366cc;
+  text-shadow: 0 0 8px #3366cc;
+}
+
+/* ============================
+   TARJETAS DE PERSONAJE
+   ============================ */
+.fighter-card {
+  display: flex; flex-direction: column;
+  width: calc(18% - 8px); min-width: 120px; max-width: 170px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px; padding: 8px;
+  cursor: pointer; transition: all 0.15s;
+  position: relative;
+  user-select: none;
+}
+.fighter-card:hover { border-color: var(--border-accent); background: var(--bg-card-hover); }
+.fighter-card.is-dead {
+  opacity: 0.35; filter: grayscale(80%);
+  border-color: #2a1a1a; cursor: default;
+}
+.fighter-card.active-turn { border-color: #ffd700 !important; }
+.fighter-card.hero-card { border-color: #1a2a4a; }
+.fighter-card.hero-card:hover { border-color: #3355aa; }
+.fighter-card.enemy-card { border-color: #2a1a1a; }
+.fighter-card.enemy-card:hover { border-color: #aa3333; }
+.fighter-card.selected-target {
+  border-color: #ff6600 !important;
+  box-shadow: 0 0 15px rgba(255,102,0,0.5);
+}
+
+.card-icon {
+  font-size: 2em; text-align: center;
+  line-height: 1; margin-bottom: 4px;
+}
+.card-name {
+  font-size: 0.72em; font-weight: bold; text-align: center;
+  color: var(--text-primary); line-height: 1.2;
+  margin-bottom: 2px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.card-title {
+  font-size: 0.6em; color: var(--text-dim); text-align: center;
+  margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Barras en tarjeta */
+.card-bars { display: flex; flex-direction: column; gap: 3px; margin-bottom: 5px; }
+.bar-row { display: flex; align-items: center; gap: 4px; }
+.bar-label { font-size: 0.6em; color: var(--text-dim); width: 18px; text-align: right; }
+.bar-val { font-size: 0.6em; color: var(--text-secondary); min-width: 28px; text-align: right; }
+
+.hp-text { color: #44dd66; }
+.mp-text { color: #4466dd; }
+
+/* Efectos de estado en card */
+.card-status { min-height: 16px; display: flex; flex-wrap: wrap; gap: 1px; }
+.status-icon { font-size: 0.75em; }
+
+/* Cosmo bar (solo heroes) */
+.cosmo-row { margin-top: 2px; }
+
+/* ============================
+   OVERLAY DE ACCIÓN
+   ============================ */
+.action-overlay {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(0deg, rgba(5,5,20,0.98) 0%, rgba(5,5,20,0.85) 100%);
+  border-top: 1px solid #1a1a50;
+  padding: 10px 20px;
+  display: flex; align-items: center; justify-content: center; gap: 15px;
+  z-index: 50;
+  transition: transform 0.3s ease;
+}
+.action-overlay.hidden { transform: translateY(100%); }
+
+.action-main-btn {
+  padding: 10px 24px; font-size: 1em; font-weight: bold;
+  border-radius: 8px; cursor: pointer; font-family: inherit;
+  border: 2px solid; letter-spacing: 1px; transition: all 0.15s;
+}
+.btn-attack {
+  background: linear-gradient(135deg, #4a0000, #880000);
+  border-color: #cc2200; color: #ffcccc;
+}
+.btn-attack:hover:not(:disabled) {
+  background: linear-gradient(135deg, #660000, #cc0000);
+  box-shadow: 0 0 20px rgba(200,50,0,0.6);
+  transform: scale(1.03);
+}
+.btn-attack:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-bag {
+  background: rgba(80,60,0,0.5); border-color: #aa8800; color: #ffcc44;
+}
+.btn-bag:hover { background: rgba(120,90,0,0.7); }
+.btn-flee {
+  background: rgba(20,20,40,0.8); border-color: #445; color: #778;
+}
+.btn-flee:hover { background: rgba(40,40,60,0.9); }
+
+.waiting-indicator {
+  color: #cc3333; font-size: 0.85em; letter-spacing: 1px;
+  animation: pulse-active 1.5s ease-in-out infinite;
+}
+
+/* ============================
+   POPUP DE HABILIDADES
+   ============================ */
+.skill-popup {
+  width: min(820px, 95vw);
+  max-height: 85vh;
+}
+.popup-header {
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 12px; align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(90deg, #0a0a20, #111128);
+  border-bottom: 1px solid #2a2a50;
+}
+.popup-hero-icon { font-size: 2.5em; }
+.popup-hero-info .hero-name { font-size: 1.1em; font-weight: bold; color: #ffd700; }
+.popup-hero-info .hero-stats {
+  display: flex; gap: 12px; font-size: 0.75em; color: #a0a8c0; margin-top: 4px;
+}
+.popup-hero-info .stat-item { display: flex; align-items: center; gap: 3px; }
+
+.popup-body {
+  display: grid; grid-template-columns: 3fr 2fr;
+  gap: 0; overflow: hidden; flex: 1;
+}
+
+/* Panel de habilidades */
+.skills-panel {
+  padding: 10px; border-right: 1px solid #1a1a40;
+  overflow-y: auto;
+}
+.skills-title {
+  font-size: 0.7em; letter-spacing: 2px; color: #6688aa;
+  margin-bottom: 8px; padding-bottom: 4px;
+  border-bottom: 1px solid #1a1a40;
+}
+.skill-list { display: flex; flex-direction: column; gap: 6px; }
+.skill-btn {
+  display: grid; grid-template-columns: 36px 1fr auto;
+  align-items: center; gap: 8px;
+  padding: 8px 10px; border: 1px solid #2a2a50;
+  border-radius: 6px; cursor: pointer; background: #0e0e22;
+  transition: all 0.15s; text-align: left;
+  font-family: inherit;
+}
+.skill-btn:hover:not(:disabled) {
+  background: #16163a; border-color: #5566aa;
+  box-shadow: 0 0 10px rgba(80,100,200,0.3);
+}
+.skill-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.skill-btn.selected { background: #1a2050; border-color: #ffd700; }
+.skill-icon-lg { font-size: 1.5em; text-align: center; }
+.skill-info .skill-name {
+  font-size: 0.82em; font-weight: bold; color: #e0d8c0; margin-bottom: 2px;
+}
+.skill-info .skill-desc { font-size: 0.68em; color: #888; line-height: 1.3; }
+.skill-info .skill-effects { font-size: 0.65em; color: #aa88cc; margin-top: 2px; }
+.skill-cost {
+  text-align: right; white-space: nowrap;
+}
+.skill-cost .mp-cost { font-size: 0.7em; color: #4466cc; }
+.skill-cost .cd-info { font-size: 0.65em; color: #666; }
+.basic-badge {
+  display: inline-block; font-size: 0.6em; padding: 1px 4px;
+  background: rgba(100,150,255,0.15); border: 1px solid #2244aa;
+  border-radius: 3px; color: #88aaff; margin-left: 4px;
+}
+
+/* Panel mini-enemigos en popup */
+.mini-enemies-panel {
+  padding: 10px; overflow-y: auto;
+  background: #09091a;
+}
+.mini-panel-title {
+  font-size: 0.7em; letter-spacing: 2px; color: #aa4444;
+  margin-bottom: 8px; padding-bottom: 4px;
+  border-bottom: 1px solid #1a1a40;
+}
+.mini-enemy-list { display: flex; flex-direction: column; gap: 5px; }
+.mini-enemy {
+  display: grid; grid-template-columns: 28px 1fr;
+  gap: 6px; align-items: center;
+  padding: 5px 7px; border: 1px solid #2a1a1a;
+  border-radius: 5px; background: #0c0c1a;
+  cursor: pointer; transition: all 0.15s;
+}
+.mini-enemy:hover:not(.mini-dead) { border-color: #cc5500; background: #150c0a; }
+.mini-enemy.mini-selected { border-color: #ff6600; background: #1a1000; }
+.mini-enemy.mini-dead { opacity: 0.3; cursor: default; filter: grayscale(1); }
+.mini-enemy-icon { font-size: 1.3em; text-align: center; }
+.mini-enemy-info .mini-name { font-size: 0.72em; color: #e0d8c0; margin-bottom: 3px; }
+
+/* Footer del popup */
+.popup-footer {
+  padding: 10px 16px;
+  border-top: 1px solid #1a1a40;
+  display: flex; gap: 10px; align-items: center; justify-content: flex-end;
+  background: #09091a;
+}
+.popup-status {
+  flex: 1; font-size: 0.75em; color: #888;
+}
+.popup-status.ready { color: #44ff88; }
+
+/* ============================
+   FIN DE COMBATE
+   ============================ */
+.battle-end-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.8);
+  animation: fadeIn 0.5s ease;
+}
+.battle-end-overlay.hidden { display: none; }
+.battle-end-box {
+  text-align: center; padding: 40px 60px;
+  background: linear-gradient(135deg, #0a0a20, #14142e);
+  border: 2px solid; border-radius: 16px;
+  animation: popup-enter 0.4s ease;
+}
+.victory-box { border-color: #ffd700; box-shadow: 0 0 60px rgba(255,215,0,0.4); }
+.defeat-box  { border-color: #cc2200; box-shadow: 0 0 60px rgba(200,34,0,0.4); }
+.end-title { font-size: 3em; font-weight: bold; margin-bottom: 10px; }
+.victory-title { color: #ffd700; text-shadow: 0 0 30px #ffd700; }
+.defeat-title  { color: #ff4444; text-shadow: 0 0 30px #ff4444; }
+.end-subtitle { font-size: 1.1em; color: #a0a8c0; margin-bottom: 30px; }
+
+/* ============================
+   INDICADOR DE TURNO ORDEN
+   ============================ */
+.turn-order-strip {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 28px;
+  background: rgba(5,5,15,0.9);
+  border-bottom: 1px solid #1a1a40;
+  display: flex; align-items: center; padding: 0 10px; gap: 4px;
+  font-size: 0.65em; overflow: hidden; z-index: 10;
+}
+.turn-strip-label { color: #555; margin-right: 4px; letter-spacing: 1px; }
+.turn-token {
+  padding: 2px 8px; border-radius: 10px;
+  white-space: nowrap; border: 1px solid;
+}
+.token-hero { background: rgba(0,50,150,0.5); border-color: #2244aa; color: #88aaff; }
+.token-enemy { background: rgba(100,0,0,0.5); border-color: #aa2200; color: #ffaa88; }
+.token-current { border-width: 2px !important; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<!-- SCREEN PRINCIPAL -->
+<div class="battle-screen" id="battleScreen">
+
+  <!-- ZONA ENEMIGOS -->
+  <div class="enemies-zone" id="enemiesZone">
+    <div style="color:#555; font-size:0.8em;">Cargando...</div>
+  </div>
+
+  <!-- ZONA CENTRAL -->
+  <div class="center-zone">
+    <div class="battle-log-panel" id="battleLog">
+      <div class="log-entry type-battle_start">⚔️ Iniciando combate...</div>
+    </div>
+    <div class="action-panel">
+      <div class="action-label">ESTADO</div>
+      <div class="current-turn-badge hero-turn" id="turnBadge">Turno del Héroe</div>
+      <div class="turn-info" id="turnInfo">Ronda 1</div>
+      <div class="action-label" style="margin-top:4px;">ORDEN</div>
+      <div id="miniTurnOrder" style="font-size:0.6em; color:#666; line-height:1.6;"></div>
+    </div>
+  </div>
+
+  <!-- ZONA HÉROES -->
+  <div class="heroes-zone" id="heroesZone">
+    <div style="color:#555; font-size:0.8em;">Cargando...</div>
+  </div>
+
+</div>
+
+<!-- BARRA DE ACCIONES INFERIOR -->
+<div class="action-overlay" id="actionOverlay">
+  <button class="action-main-btn btn-attack" id="btnAttack" onclick="openSkillPopup()">⚔️ ATACAR</button>
+  <button class="action-main-btn btn-bag" id="btnBag" onclick="alert('Mochila próximamente...')" disabled>🎒 MOCHILA</button>
+  <button class="action-main-btn btn-flee" id="btnFlee" onclick="fleeBattle()">🏃 HUIR</button>
+  <div class="waiting-indicator hidden" id="waitingIndicator">⚡ Turno Enemigo...</div>
+</div>
+
+<!-- POPUP DE HABILIDADES -->
+<div class="overlay hidden" id="skillOverlay">
+  <div class="popup skill-popup">
+    <div class="popup-header">
+      <div class="popup-hero-icon" id="popupHeroIcon">🦅</div>
+      <div class="popup-hero-info">
+        <div class="hero-name" id="popupHeroName">Seiya</div>
+        <div class="hero-stats">
+          <span class="stat-item" id="popupHpStat">❤️ HP: -</span>
+          <span class="stat-item" id="popupMpStat">💙 MP: -</span>
+          <span class="stat-item" id="popupCosmStat">⭐ Cosmo: -</span>
+          <span class="stat-item" id="popupAtkStat">⚔️ ATK: -</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="popup-body">
+      <!-- Lista de habilidades -->
+      <div class="skills-panel">
+        <div class="skills-title">SELECCIONA UNA HABILIDAD</div>
+        <div class="skill-list" id="skillList"></div>
+      </div>
+
+      <!-- Mini vista de enemigos -->
+      <div class="mini-enemies-panel">
+        <div class="mini-panel-title">OBJETIVOS</div>
+        <div class="mini-enemy-list" id="miniEnemyList"></div>
+      </div>
+    </div>
+
+    <div class="popup-footer">
+      <div class="popup-status" id="popupStatus">Elige una habilidad y un objetivo</div>
+      <button class="btn btn-red" onclick="closeSkillPopup()">✕ Cancelar</button>
+      <button class="btn btn-gold" id="btnConfirmSkill" onclick="confirmSkill()" disabled>
+        ✓ Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FIN DE COMBATE -->
+<div class="battle-end-overlay hidden" id="battleEndOverlay">
+  <div class="battle-end-box" id="battleEndBox">
+    <div class="end-title" id="endTitle">¡VICTORIA!</div>
+    <div class="end-subtitle" id="endSubtitle">Los Santos han triunfado</div>
+    <button class="btn btn-gold" onclick="window.location.href='/'"
+      style="padding:12px 30px; font-size:1em;">
+      🏠 Volver al Inicio
+    </button>
+  </div>
+</div>
+
+<script src="/static/js/combat.js"></script>
+</body>
+</html>

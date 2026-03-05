@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saint Seiya – Battle Demo</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+  .hub-container {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 100vh;
+    background: radial-gradient(ellipse at center, #0a0a2e 0%, #000005 100%);
+    color: #e0d0a0;
+  }
+  .hub-title {
+    font-size: 3em; font-weight: bold; text-align: center;
+    color: #ffd700; text-shadow: 0 0 30px #ffd700, 0 0 60px #ff8c00;
+    margin-bottom: 10px; letter-spacing: 4px;
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+  .hub-subtitle {
+    font-size: 1.2em; color: #a0b8e0; margin-bottom: 50px;
+    letter-spacing: 2px; text-align: center;
+  }
+  .hub-buttons { display: flex; flex-direction: column; gap: 15px; align-items: center; }
+  .hub-btn {
+    width: 280px; padding: 16px 30px; font-size: 1.1em;
+    border: 2px solid; border-radius: 8px; cursor: pointer;
+    font-family: inherit; letter-spacing: 1px; transition: all 0.2s;
+    text-decoration: none; text-align: center;
+  }
+  .btn-battle {
+    background: linear-gradient(135deg, #8b0000, #cc0000);
+    border-color: #ff4444; color: #fff;
+    box-shadow: 0 0 20px rgba(200,0,0,0.4);
+  }
+  .btn-battle:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(200,0,0,0.7); }
+  .btn-heroes {
+    background: linear-gradient(135deg, #003366, #0055aa);
+    border-color: #4488ff; color: #fff;
+  }
+  .btn-heroes:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(68,136,255,0.5); }
+  .difficulty-selector {
+    margin: 20px 0; display: flex; gap: 10px; align-items: center;
+  }
+  .diff-label { color: #a0b8e0; font-size: 0.9em; margin-right: 5px; }
+  .diff-btn {
+    padding: 8px 18px; border: 1px solid; border-radius: 5px;
+    cursor: pointer; font-family: inherit; font-size: 0.85em; transition: all 0.2s;
+    background: transparent;
+  }
+  .diff-easy { border-color: #44ff88; color: #44ff88; }
+  .diff-easy.active { background: #44ff88; color: #000; }
+  .diff-normal { border-color: #ffd700; color: #ffd700; }
+  .diff-normal.active { background: #ffd700; color: #000; }
+  .diff-hard { border-color: #ff4444; color: #ff4444; }
+  .diff-hard.active { background: #ff4444; color: #fff; }
+  .cosmos-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; overflow: hidden; z-index: 0;
+  }
+  .star {
+    position: absolute; background: #fff; border-radius: 50%;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.3; } 50% { opacity: 1; }
+  }
+  @keyframes glow-pulse {
+    0%, 100% { text-shadow: 0 0 30px #ffd700, 0 0 60px #ff8c00; }
+    50% { text-shadow: 0 0 50px #ffd700, 0 0 100px #ff8c00, 0 0 120px #ffaa00; }
+  }
+  .hub-content { position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+<div class="cosmos-bg" id="starsBg"></div>
+<div class="hub-container">
+  <div class="hub-content">
+    <div class="hub-title">⭐ SAINT SEIYA ⭐</div>
+    <div class="hub-subtitle">KNIGHTS OF THE ZODIAC – BATTLE DEMO</div>
+
+    <div class="difficulty-selector">
+      <span class="diff-label">Dificultad:</span>
+      <button class="diff-btn diff-easy" onclick="setDifficulty('easy')">Fácil</button>
+      <button class="diff-btn diff-normal active" onclick="setDifficulty('normal')">Normal</button>
+      <button class="diff-btn diff-hard" onclick="setDifficulty('hard')">Difícil</button>
+    </div>
+
+    <div class="hub-buttons">
+      <button class="hub-btn btn-battle" onclick="startBattle()">⚔️ INICIAR COMBATE</button>
+      <a href="/heroes" class="hub-btn btn-heroes">🛡️ VER HÉROES</a>
+    </div>
+
+    <div style="margin-top:40px; text-align:center; color:#555; font-size:0.8em;">
+      Los 5 Santos de Bronce vs 5 Monstruos del Calabozo<br>
+      ¡La estrategia es la clave de la victoria!
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedDifficulty = 'normal';
+
+function setDifficulty(diff) {
+  selectedDifficulty = diff;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.diff-' + diff).classList.add('active');
+  fetch('/api/difficulty', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({difficulty: diff})
+  });
+}
+
+function startBattle() {
+  fetch('/api/start_battle', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({difficulty: selectedDifficulty})
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) window.location.href = '/combat';
+    else alert('Error al iniciar combate');
+  })
+  .catch(e => { console.error(e); alert('Error de conexión'); });
+}
+
+// Generar estrellas de fondo
+const bg = document.getElementById('starsBg');
+for (let i = 0; i < 150; i++) {
+  const star = document.createElement('div');
+  star.className = 'star';
+  const size = Math.random() * 3 + 1;
+  star.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random()*100}%;
+    top:${Math.random()*100}%;
+    animation-delay:${Math.random()*3}s;
+    animation-duration:${2+Math.random()*3}s;
+  `;
+  bg.appendChild(star);
+}
+</script>
+</body>
+</html>
